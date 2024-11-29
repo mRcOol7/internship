@@ -1,15 +1,26 @@
 import React, { useState } from "react";
 import Navbar from "./navBar";
 import { useNavigate } from "react-router-dom";
-
+import api from "../api";
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [message, setMessage] = useState({ text: '', type: '' });
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        navigate('/');
+        try{
+            const response = await api.post('/api/login', {email, password});
+            localStorage.setItem('token', response.data.token);
+            setMessage({ text: 'Login successful!', type: 'success' });
+            setTimeout(() => {
+                navigate('/', {state:{sucessMessage:'Login successful'}});
+            }, 1500);
+        }catch(error){
+            const errorMsg = error.response?.data?.message || error.message || 'Login failed. Please try again.';
+            setMessage({ text: errorMsg, type: 'error' });
+        }
     };
 
     return (
@@ -17,6 +28,11 @@ const Login = () => {
             <Navbar />
             <div className="login-container">
                 <h2>Login</h2>
+                {message.text && (
+                    <div className={`message ${message.type}`}>
+                        {message.text}
+                    </div>
+                )}
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Email</label>
@@ -39,6 +55,9 @@ const Login = () => {
                         />
                     </div>
                     <button type="submit">Login</button>
+                    <p>
+                        Don't have an account? <a href="/signup">Sign up</a>
+                    </p>
                 </form>
             </div>
         </div>

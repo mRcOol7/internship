@@ -1,11 +1,15 @@
 import React from "react";
 import Navbar from './navBar';
+import { useLocation } from "react-router-dom";
 
 const Home = () =>{
+    const location = useLocation();
+    const {sucessMessage} = location.state || {};
     return(
         <div>
             <Navbar/>
             <div className="Home-Page"></div>
+            {sucessMessage && <p style={{textAlign: 'center', fontSize: '1.2rem', color: 'green'}}>{sucessMessage}</p>}
             <section className="hero-section">
                 <div className="hero-content">
                     <h1>Discover the Best Recipes</h1>

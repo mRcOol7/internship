@@ -16,6 +16,9 @@ body {
   align-items: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: sticky;
+  height: 60px;
+  top: 0;
+  z-index: 9999
 }
 
 .nav-name {
@@ -149,6 +152,41 @@ body {
 .login-container button:active, .signup-container button:active {
   transform: translateY(0);
   box-shadow: 0 2px 5px rgba(74, 144, 226, 0.3);
+  
+}
+.login-container .message,
+.signup-container .message {
+  padding: 14px 20px;
+  border-radius: 6px;
+  margin-bottom: 25px;
+  text-align: center;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-in-out;
+}
+
+.login-container .message.success,
+.signup-container .message.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.login-container .message.error,
+.signup-container .message.error {
+  background-color: #fdecea;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+@keyframes slideIn {
+  from {
+      transform: translateY(-20px);
+      opacity: 0;
+  }
+  to {
+      transform: translateY(0);
+      opacity: 1;
+  }
 }
 
 .Home-Page {
@@ -210,6 +248,7 @@ body {
   font-size: 1.2rem;
   margin-bottom: 30px;
 }
+
 
 
 @media screen and (max-width: 768px) {
@@ -396,6 +435,21 @@ body {
   .login-container button, .signup-container button {
     font-size: 1rem;
   }
+
+  .login-container .message,
+  .signup-container .message {
+    font-size: 0.9rem;
+  }
+
+  .login-container .message.success,
+  .signup-container .message.success {
+    padding: 10px 15px;
+  }
+  
+  .login-container .message.error,
+  .signup-container .message.error {
+    padding: 10px 15px;
+  }
 }
 
 @media screen and (max-width: 480px) {
@@ -414,6 +468,21 @@ body {
   .login-container button, .signup-container button {
     font-size: 0.9rem;
   } 
+
+  .login-container .message,
+  .signup-container .message {
+    font-size: 0.8rem;
+  }
+
+  .login-container .message.success,
+  .signup-container .message.success {
+    padding: 8px 12px;
+  }
+  
+  .login-container .message.error,
+  .signup-container .message.error {
+    padding: 8px 12px;
+  }
 }
 
 @media screen and (max-width: 320px) {
@@ -431,5 +500,20 @@ body {
   
   .login-container button, .signup-container button {
     font-size: 0.8rem;
+  }
+
+  .login-container .message,
+  .signup-container .message {
+    font-size: 0.7rem;
+  }
+
+  .login-container .message.success,
+  .signup-container .message.success {
+    padding: 6px 10px;
+  }
+  
+  .login-container .message.error,
+  .signup-container .message.error {
+    padding: 6px 10px;
   }
 }

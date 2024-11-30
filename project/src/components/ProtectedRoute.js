@@ -16,14 +16,6 @@ const ProtectedRoute = () => {
                 draggable: true,
                 progress: undefined,
                 theme: "Dark",
-                style: {
-                    fontSize: "16px",
-                    fontWeight: "bold",
-                    color: "white",
-                    backgroundColor: "black",
-                    padding: "clamp(0.5rem, 1vw, 1rem)",
-                    borderRadius: "clamp(0.25rem, 1vw, 0.5rem)",
-                },
             });
             setTimeout(() => {
                 window.location.href = "/login";

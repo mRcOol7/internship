@@ -15,7 +15,6 @@ const ProtectedRoute = () => {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
-                theme: "colored",
             });
             setTimeout(() => {
                 window.location.href = "/login";

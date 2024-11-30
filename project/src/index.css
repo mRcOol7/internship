@@ -56,6 +56,56 @@ body {
   transform: rotateX('-0.5px');
 }
 
+.nav-item a.active {
+  background-color: lightgray;
+  color: #555;
+}
+
+.nav-name h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: slideIn 0.5s ease-in-out;
+  border-color: #ffcdd2;
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.nav-name h1:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+
+}
+
+.nav-name h1 a {
+  text-decoration: none;
+  color: #333;
+  transition: color 0.3s ease;
+}
+
+.nav-name h1 a:hover {
+  color: #4a90e2;
+}
 
 .login-container, .signup-container {
   max-width: 400px;
@@ -381,6 +431,30 @@ body {
   .nav-item a {
     font-size: 1rem;
   }
+
+  .nav-item a:hover {
+    color: #4a90e2;
+    font-size: 1.2rem;
+  }
+
+  .nav-item a:active {
+    color: #357abd;
+    font-size: 1.2rem;
+  }
+
+  .nav-item a:visited {
+    color: #4a90e2;
+    font-size: 1.2rem;
+  }
+
+  .nav-name h1 {
+    font-size: 1.5rem;
+  }
+
+  .nav-name h1:hover {
+    color: #4a90e2;
+    font-size: 1.7rem;
+  }
 }
 
 @media screen and (max-width: 480px) {
@@ -399,6 +473,30 @@ body {
   .nav-item a {
     font-size: 0.8rem;
   }
+
+  .nav-item a:hover {
+    color: #4a90e2;
+    font-size: 1rem;
+  }
+
+  .nav-item a:active {
+    color: #357abd;
+    font-size: 1rem;
+  }
+
+  .nav-item a:visited {
+    color: #4a90e2;
+    font-size: 1rem;
+  }
+
+  .nav-name h1 {
+    font-size: 1.2rem;
+  }
+
+  .nav-name h1:hover {
+    color: #4a90e2;
+    font-size: 1.4rem;
+  }
 }
 
 @media screen and (max-width: 320px) {
@@ -416,6 +514,30 @@ body {
   
   .nav-item a {
     font-size: 0.6rem;
+  }
+
+  .nav-item a:hover {
+    color: #4a90e2;
+    font-size: 0.8rem;
+  }
+
+  .nav-item a:active {
+    color: #357abd;
+    font-size: 0.8rem;
+  }
+
+  .nav-item a:visited {
+    color: #4a90e2;
+    font-size: 0.8rem;
+  }
+
+  .nav-name h1 {
+    font-size: 1rem;
+  }
+
+  .nav-name h1:hover {
+    color: #4a90e2;
+    font-size: 1.2rem;
   }
 }
 

@@ -3,6 +3,7 @@ const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
 const mysql=require('mysql2/promise');
 const cors=require('cors');
+require('dotenv').config();
 const app=express();
 const port=5000;
 
@@ -10,13 +11,13 @@ app.use(express.json());
 app.use(cors());
 
 const db=mysql.createPool({
-    host:'localhost',
-    user:'root',
-    password:'',
-    database:'internship',
-    waitForConnections:true,
-    connectionLimit:10,
-    queueLimit:0
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: process.env.DB_WAIT_FOR_CONNECTIONS === 'true',
+    connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT),
+    queueLimit: parseInt(process.env.DB_QUEUE_LIMIT)
 });
 
 db.getConnection().then((connection)=>{

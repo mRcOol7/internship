@@ -16,10 +16,12 @@ const Login = () => {
             setMessage({ text: 'Login successful!', type: 'success' });
             setTimeout(() => {
                 navigate('/', {state:{sucessMessage:'Login successful'}});
+                console.log('Login successful');
             }, 1500);
         }catch(error){
             const errorMsg = error.response?.data?.message || error.message || 'Login failed. Please try again.';
             setMessage({ text: errorMsg, type: 'error' });
+            console.log(errorMsg);
         }
     };
 

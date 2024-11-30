@@ -22,10 +22,12 @@ const Signup = () => {
             setMessage({text:'Sign up successful',type:'success'});
             setTimeout(() => {
                 navigate('/login', {state:{Text:'Sign up successful',sucessMessage:'Sign up successful'}});
+                console.log('Sign up successful');
             }, 1500);
         }catch(error){
             const errorMsg = error.response?.data?.message || error.message || 'Sign up failed. Please try again.';
             setMessage({text:errorMsg,type:'error'});
+            console.log(errorMsg);
         }
     };
 

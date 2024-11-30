@@ -63,3 +63,5 @@ debug/
 *.cer
 *.der
 *.priv
+
+.vercel

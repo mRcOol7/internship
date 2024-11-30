@@ -1,9 +1,18 @@
+|-- .github
+    |-- workflows
+        |-- node.js.yml
 |-- .gitignore
 |-- backend
     |-- .env
     |-- .gitignore
+    |-- db.js
+    |-- helpers
+        |-- authHelper.js
     |-- package-lock.json
     |-- package.json
+    |-- routes
+        |-- authRoutes.js
+        |-- protectedRoutes.js
     |-- server.js
 |-- project
     |-- .gitignore
@@ -28,8 +37,12 @@
             |-- navBar.js
             |-- ProtectedRoute.js
             |-- signup.js
+        |-- helpers
+            |-- authHelper.js
         |-- index.css
         |-- index.js
         |-- logo.svg
         |-- reportWebVitals.js
+        |-- routes
+            |-- index.js
         |-- setupTests.js

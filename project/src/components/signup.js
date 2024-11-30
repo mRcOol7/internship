@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Navbar from "./navBar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 import api from "../api";
 
 const Signup = () => {
@@ -50,6 +50,11 @@ const Signup = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             required
                             placeholder="Enter your email"
+                            about="email"
+                            error="Please enter a valid email address"
+                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                            title="Please enter a valid email address"
+                            
                         />
                     </div>
                     <div className="form-group">
@@ -70,11 +75,13 @@ const Signup = () => {
                             onChange={(e) => setconfirmPassword(e.target.value)}
                             required
                             placeholder="Confirm your password"
-                            error={password !== confirmPassword ? '<h1> Passwords do not match</h1>' : ''}           
+                            error={password !== confirmPassword ? '<h1> Passwords do not match</h1>' : ''}
+                            pattern={password}           
+                            title="Passwords must match"
                         />
                     </div>
                     <button type="submit">Sign Up</button>
-                    <p>Already have an account? <a href="/login">Login</a></p>
+                    <p>Already have an account? <Link to="/login" className="Login-Link">Login</Link></p>
                 </form>
             </div>
         </div>

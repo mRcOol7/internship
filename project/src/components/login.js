@@ -1,27 +1,24 @@
 import React, { useState } from "react";
 import Navbar from "./navBar";
-import { useNavigate } from "react-router-dom";
-import api from "../api";
+import { Link } from "react-router-dom";
+import { useAuth } from "../helpers/authHelper";
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
-    const navigate = useNavigate();
+    const {login} = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try{
-            const response = await api.post('/api/login', {email, password});
-            localStorage.setItem('token', response.data.token);
-            setMessage({ text: 'Login successful!', type: 'success' });
-            setTimeout(() => {
-                navigate('/', {state:{sucessMessage:'Login successful'}});
-                console.log('Login successful');
-            }, 1500);
+            await login(email, password);
+            setMessage({ text: 'Login successful', type: 'success' });
+            console.log('Login successful');
         }catch(error){
-            const errorMsg = error.response?.data?.message || error.message || 'Login failed. Please try again.';
-            setMessage({ text: errorMsg, type: 'error' });
-            console.log(errorMsg);
+            setMessage({ text: error.response?.data?.message || error.message || 'Login failed. Please try again.', type: 'error' });
+            console.log(error.response?.data?.message || error.message || 'Login failed. Please try again.');
+            console.log(error);
         }
     };
 
@@ -44,6 +41,10 @@ const Login = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             required
                             placeholder="Enter your email"
+                            about="email"
+                            error="Please enter a valid email address"
+                            pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                            title="Please enter a valid email address"
                         />
                     </div>
                     <div className="form-group">
@@ -58,7 +59,7 @@ const Login = () => {
                     </div>
                     <button type="submit">Login</button>
                     <p>
-                        Don't have an account? <a href="/signup">Sign up</a>
+                        Don't have an account? <Link to="/signup" className="signup-link">Sign up</Link>
                     </p>
                 </form>
             </div>

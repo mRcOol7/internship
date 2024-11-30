@@ -10,6 +10,7 @@ const Home = () =>{
             <Navbar/>
             <div className="Home-Page"></div>
             {sucessMessage && <p style={{textAlign: 'center', fontSize: '1.2rem', color: 'green'}}>{sucessMessage}</p>}
+            {console.log({sucessMessage})}
             <section className="hero-section">
                 <div className="hero-content">
                     <h1>Discover the Best Recipes</h1>

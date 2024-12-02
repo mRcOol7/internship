@@ -15,10 +15,12 @@ const Login = () => {
             await login(email, password);
             setMessage({ text: 'Login successful', type: 'success' });
             console.log('Login successful');
+            console.log('User ID:', localStorage.getItem('token'));
         }catch(error){
             setMessage({ text: error.response?.data?.message || error.message || 'Login failed. Please try again.', type: 'error' });
             console.log(error.response?.data?.message || error.message || 'Login failed. Please try again.');
             console.log(error);
+            console.log('User ID:', localStorage.getItem('token'));
         }
     };
 

@@ -34,7 +34,47 @@ const login = async(req, res) => {
     }
 };
 
-const protectedRoute = async(req, res) => {
+const saveContent = async (req, res) => {
+    const { content } = req.body;
+    const token = req.headers.authorization;
+
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
+    }
+
+    try {
+        
+        const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET);
+        const userId = decoded.id;
+
+        console.log('User ID:', userId);
+        console.log('Content:', content);
+
+        
+        if (!content) {
+            return res.status(400).json({ message: 'Content is required' });
+        }
+
+        
+        const sql = 'INSERT INTO editor_content (user_id, content) VALUES (?, ?)';
+        await db.query(sql, [userId, content]);
+        res.status(201).json({ message: 'Content saved successfully' });
+
+    } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token expired' });
+        }
+
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
+
+        
+        res.status(500).json({ error: 'Error saving content' });
+    }
+};
+
+const protectedRoute = ((req, res) => {
     const token = req.headers.authorization;
     if (!token) {
         res.status(401).json({ message: 'Unauthorized' });
@@ -47,7 +87,8 @@ const protectedRoute = async(req, res) => {
             }
         });
     }
-};
+});
+
 
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization'];
@@ -69,5 +110,6 @@ module.exports={
     login:login,
     signup:signup,
     protectedRoute:protectedRoute,
+    saveContent:saveContent,
     verifyToken:verifyToken
 };

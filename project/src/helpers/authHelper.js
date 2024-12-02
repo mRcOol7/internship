@@ -25,5 +25,14 @@ export const useAuth = () => {
         }
     };
 
-    return { login, signup };
+    const saveContent = async (text) => {
+        try {
+            const response = await api.post('/api/save-Content', { text });
+            console.log('Text saved successfully', response.data);
+        } catch (error) {
+            console.error('Error saving text', error);
+        }
+    };
+
+    return { login, signup, saveContent };
 };

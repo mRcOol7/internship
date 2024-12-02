@@ -9,8 +9,15 @@ const Home = () =>{
         <div>
             <Navbar/>
             <div className="Home-Page"></div>
-            {sucessMessage && <p style={{textAlign: 'center', fontSize: '1.2rem', color: 'green'}}>{sucessMessage}</p>}
+            {sucessMessage && (
+                <>
+                    <p style={{textAlign: 'center', fontSize: '1.2rem', color: 'green'}}>{sucessMessage}</p>
+                    {console.log('Login Success Message:', sucessMessage)}
+                    {console.log('User ID:', localStorage.getItem('token'))}
+                </>
+            )}
             {console.log({sucessMessage})}
+
             <section className="hero-section">
                 <div className="hero-content">
                     <h1>Discover the Best Recipes</h1>
@@ -31,4 +38,3 @@ const Home = () =>{
 };
 
 export default Home;
-

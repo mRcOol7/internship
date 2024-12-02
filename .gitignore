@@ -4,6 +4,7 @@ venv/
 env/
 __pycache__/
 *.py[cod]
+!backend/node_modules
 
 # Environment variables
 .env

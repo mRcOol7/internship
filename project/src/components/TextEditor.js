@@ -1,34 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
 import Navbar from './navBar';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+
 
 const TextEditor = () => {
     const [value, setValue] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const quillRef = useRef(null);
     const navigate = useNavigate();
+    const location = useLocation();
+    
     const token = localStorage.getItem('token');
 
-    useEffect(() => {
-        if (!token) {
-            toast.error("Please login to access the Editor", {
-                position: "top-center",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-            setTimeout(() => {
-                navigate('/login');
-            }, 3000);
-        }
-    }, [token, navigate]);
+    const { state } = location;
+    
 
     const handleChange = (content, delta, source, editor) => {
         setValue(content);

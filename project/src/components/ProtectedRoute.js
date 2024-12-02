@@ -8,7 +8,7 @@ const ProtectedRoute = () => {
     useEffect(() => {
         if (!token) {
             toast.error("Please login to access Home page", {
-                position: "top-center",
+                position: "bottom-center",
                 autoClose: 3000,
                 hideProgressBar: false,
                 closeOnClick: true,

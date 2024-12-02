@@ -1,12 +1,33 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
 import Navbar from './navBar';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
-const TextEditor = ({ token }) => {
+const TextEditor = () => {
     const [value, setValue] = useState('');
     const quillRef = useRef(null);
+    const navigate = useNavigate();
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+        if (!token) {
+            toast.error("Please login to access the Editor", {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            setTimeout(() => {
+                navigate('/login');
+            }, 3000);
+        }
+    }, [token, navigate]);
 
     const modules = {
         toolbar: [
@@ -40,20 +61,55 @@ const TextEditor = ({ token }) => {
     ];
 
     const saveContent = async () => {
-        const token = localStorage.getItem('token'); 
+        if (!token) {
+            toast.error("Please login to save content", {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            navigate('/login');
+            return;
+        }
+
         try {
             const response = await axios.post('http://localhost:5000/api/save-content', 
                 { content: value },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             console.log(response.data); 
-            alert('Content saved successfully!');
+            toast.success('Content saved successfully!', {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         } catch (error) {
             console.error('Error saving content:', error);
-            alert('Failed to save content.');
+            const errorMessage = error.response?.data?.message || 'Failed to save content';
+            toast.error(errorMessage, {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            
+            if (error.response?.status === 401) {
+                setTimeout(() => {
+                    navigate('/login');
+                }, 3000);
+            }
         }
     };
-    
 
     return (
         <div>

@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 const TextEditor = () => {
     const [value, setValue] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
     const quillRef = useRef(null);
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
@@ -29,6 +30,10 @@ const TextEditor = () => {
         }
     }, [token, navigate]);
 
+    const handleChange = (content, delta, source, editor) => {
+        setValue(content);
+    };
+
     const modules = {
         toolbar: [
             [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -43,6 +48,12 @@ const TextEditor = () => {
             ['formula'],
             ['clean'],
         ],
+        clipboard: {
+            matchVisual: false
+        },
+        keyboard: {
+            bindings: {}
+        }
     };
 
     const formats = [
@@ -75,6 +86,8 @@ const TextEditor = () => {
             return;
         }
 
+        setIsSaving(true);
+
         try {
             const response = await axios.post('http://localhost:5000/api/save-content', 
                 { content: value },
@@ -90,6 +103,7 @@ const TextEditor = () => {
                 draggable: true,
                 progress: undefined,
             });
+            setValue(''); // Clear the editor content
         } catch (error) {
             console.error('Error saving content:', error);
             const errorMessage = error.response?.data?.message || 'Failed to save content';
@@ -108,6 +122,8 @@ const TextEditor = () => {
                     navigate('/login');
                 }, 3000);
             }
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -120,32 +136,34 @@ const TextEditor = () => {
                     ref={quillRef}
                     theme="snow"
                     value={value}
-                    onChange={setValue}
+                    onChange={handleChange}
                     modules={modules}
                     formats={formats}
                     placeholder="Start typing your content here..."
+                    style={{ height: '300px' , overflow: 'auto'}}
+                    className="quill-editor"
+                    readOnly={false}
+                    preserveWhitespace={true}
+                    spellCheck={true}
                 />
             </div>
-            <button onClick={saveContent} style={buttonStyle}>Save Content</button>
+            <button onClick={saveContent} style={buttonStyle} disabled={isSaving}>
+                {isSaving ? 'Saving...' : 'Save Content'}
+            </button>
         </div>
     );
 };
 
+
+
 const editorStyle = {
-    margin: '20px auto',
+    margin: '80px auto',
     maxWidth: '800px',
     border: '1px solid #ccc',
     borderRadius: '8px',
     padding: '20px',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'white',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '16px',
-    lineHeight: '1.6',
-    color: '#333',
-    overflow: 'hidden',
-    whiteSpace: 'pre-wrap',
-    wordWrap: 'break-word',
 };
 
 const buttonStyle = {
@@ -158,6 +176,15 @@ const buttonStyle = {
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '16px',
+    opacity: 0.9,
+    transition: 'opacity 0.3s',
+    ':hover': {
+        opacity: 1,
+    },
+    ':disabled': {
+        backgroundColor: '#ccc',
+        cursor: 'not-allowed',
+    }
 };
 
 export default TextEditor;

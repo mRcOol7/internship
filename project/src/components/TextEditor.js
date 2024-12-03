@@ -1,23 +1,34 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
 import Navbar from './navBar';
 import { toast } from 'react-toastify';
-import { useNavigate, useLocation } from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
 
 const TextEditor = () => {
     const [value, setValue] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const quillRef = useRef(null);
     const navigate = useNavigate();
-    const location = useLocation();
-    
     const token = localStorage.getItem('token');
 
-    const { state } = location;
-    
+    useEffect(() => {
+        if (!token) {
+            toast.error("Please login to access the Editor", {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            setTimeout(() => {
+                navigate('/login');
+            }, 3000);
+        }
+    }, [token, navigate]);
 
     const handleChange = (content, delta, source, editor) => {
         setValue(content);
@@ -63,7 +74,7 @@ const TextEditor = () => {
     const saveContent = async () => {
         if (!token) {
             toast.error("Please login to save content", {
-                position: "top-center",
+                position: "bottom-center",
                 autoClose: 3000,
                 hideProgressBar: false,
                 closeOnClick: true,
@@ -92,7 +103,7 @@ const TextEditor = () => {
                 draggable: true,
                 progress: undefined,
             });
-            setValue(''); // Clear the editor content
+            setValue(''); 
         } catch (error) {
             console.error('Error saving content:', error);
             const errorMessage = error.response?.data?.message || 'Failed to save content';
@@ -116,6 +127,70 @@ const TextEditor = () => {
         }
     };
 
+    const handleImageUpload = async (event) => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (!file) return;
+    
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+    
+            const response = await axios.post('http://localhost:5000/api/save-image', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+    
+            const imageUrl = response.data.imageUrl;
+            const quill = quillRef.current.getEditor();
+            // Get current selection or default to end of document
+            const range = quill.getSelection() || { index: quill.getLength(), length: 0 };
+            quill.insertEmbed(range.index, 'image', imageUrl);
+            
+            quill.setSelection(range.index + 1);
+    
+            toast.success('Image uploaded successfully!'
+            , {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            console.log('Image uploaded successfully:', imageUrl);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            const errorMessage = error.response?.data?.message || 'Failed to upload image';
+            toast.error(errorMessage, {
+                position: "bottom-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            
+            if (error.response?.status === 401) {
+                setTimeout(() => {
+                    navigate('/login');
+                }, 3000);
+            }
+        }
+    };
+
+    };
+    
+
     return (
         <div>
             <Navbar />
@@ -138,6 +213,9 @@ const TextEditor = () => {
             </div>
             <button onClick={saveContent} style={buttonStyle} disabled={isSaving}>
                 {isSaving ? 'Saving...' : 'Save Content'}
+            </button>
+            <button onClick={handleImageUpload} style={buttonStyle}>
+                Upload Image
             </button>
         </div>
     );
@@ -175,5 +253,6 @@ const buttonStyle = {
         cursor: 'not-allowed',
     }
 };
+
 
 export default TextEditor;

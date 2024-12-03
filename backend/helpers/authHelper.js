@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const { upload } = require('./multerConfig');
 const db = require('../db');
 
 const signup = async(req, res) => {
@@ -34,6 +35,32 @@ const login = async(req, res) => {
     }
 };
 
+const uploadImage = async (req, res) => {
+    try {
+        upload.single('image')(req, res, async (err) => {
+            if (err) {
+                console.error('Error uploading image:', err);
+                return res.status(500).json({ message: 'Image upload failed', error: err });
+            }
+            
+            if (!req.file) {
+                return res.status(400).json({ message: 'No image file provided' });
+            }
+
+            const imageUrl = req.file.path;
+            console.log('Image URL:', imageUrl);
+            
+            res.status(200).json({
+                message: 'Image uploaded successfully',
+                url: imageUrl,
+            });
+        });
+    } catch (error) {
+        console.error('Error in image upload:', error);
+        res.status(500).json({ message: 'Image upload failed', error: error.message });
+    }
+};
+
 const saveContent = async (req, res) => {
     const { content } = req.body;
     const token = req.headers.authorization;
@@ -43,7 +70,6 @@ const saveContent = async (req, res) => {
     }
 
     try {
-        
         const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET);
         const userId = decoded.id;
 
@@ -107,9 +133,10 @@ const verifyToken = (req, res, next) => {
 };
 
 module.exports={
-    login:login,
-    signup:signup,
-    protectedRoute:protectedRoute,
-    saveContent:saveContent,
-    verifyToken:verifyToken
+    login: login,
+    signup: signup,
+    protectedRoute: protectedRoute,
+    saveContent: saveContent,
+    saveImage: uploadImage,
+    verifyToken: verifyToken
 };

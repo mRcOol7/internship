@@ -3,7 +3,6 @@
 # Dependencies
 /node_modules
 package-lock.json
-
 # Environment variables and secrets
 .env
 .env.local
@@ -65,3 +64,5 @@ debug/
 *.priv
 
 .vercel
+
+vercel.json

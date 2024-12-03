@@ -16,6 +16,7 @@ const signup = async(req, res) => {
 };
 
 const login = async(req, res) => {
+    console.log(req.body);
     const { email, password } = req.body;
     try {
         const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
@@ -36,6 +37,8 @@ const login = async(req, res) => {
 };
 
 const uploadImage = async (req, res) => {
+    console.log('Received image upload request');
+    console.log(req.file);
     try {
         upload.single('image')(req, res, async (err) => {
             if (err) {
@@ -62,6 +65,8 @@ const uploadImage = async (req, res) => {
 };
 
 const saveContent = async (req, res) => {
+    console.log(req.body);
+    console.log(req.headers);
     const { content } = req.body;
     const token = req.headers.authorization;
 

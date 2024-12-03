@@ -11,7 +11,6 @@ const db = mysql.createPool({
     queueLimit: parseInt(process.env.DB_QUEUE_LIMIT)
 });
 
-// Test connection
 db.getConnection()
     .then((connection) => {
         console.log('Database connected successfully');

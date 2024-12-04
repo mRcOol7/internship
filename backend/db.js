@@ -37,7 +37,7 @@ const config = {
     connectionLimit: 10, 
     waitForConnections: true,
     queueLimit: 0,
-    timezone: '+00:00',
+    timezone: '+05:30',
     supportBigNumbers: true,
     bigNumberStrings: true,
     dateStrings: true

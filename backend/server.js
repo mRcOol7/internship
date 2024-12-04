@@ -10,16 +10,27 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // CORS Configuration
-const allowedOrigins = ['http://localhost:3000', 'https://internship-esg.vercel.app', 'https://backend-sigma-orpin.vercel.app'];
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://internship-esg.vercel.app',
+    'https://backend-sigma-orpin.vercel.app',
+    'http://localhost:5000'
+];
 
 const corsOptions = {
     origin: function (origin, callback) {
+        // For development/testing, allow all origins
+        if (process.env.NODE_ENV !== 'production') {
+            return callback(null, true);
+        }
+        
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
+            console.error('CORS Error - Origin not allowed:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },

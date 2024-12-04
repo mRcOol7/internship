@@ -6,22 +6,52 @@ const db = require('../db');
 
 // Signup Controller
 const signup = async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required.' });
-    }
-
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await db.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword]);
-        res.status(201).json({ message: 'User created successfully' });
-    } catch (error) {
-        console.error('Signup Error:', error.message);
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ message: 'Email already exists.' });
+        const { email, password } = req.body;
+
+        // Input validation
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required.' });
         }
-        res.status(500).json({ message: 'Internal Server Error.' });
+
+        // Email format validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: 'Invalid email format.' });
+        }
+
+        // Password strength validation
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+        }
+
+        try {
+            // Check if user already exists
+            const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+            if (existingUsers.length > 0) {
+                return res.status(409).json({ message: 'Email already exists.' });
+            }
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Insert new user
+            await db.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword]);
+            
+            res.status(201).json({ message: 'User created successfully' });
+        } catch (dbError) {
+            console.error('Database Error:', dbError);
+            if (dbError.code === 'ER_DUP_ENTRY') {
+                return res.status(409).json({ message: 'Email already exists.' });
+            }
+            throw dbError; // Re-throw for the outer catch block
+        }
+    } catch (error) {
+        console.error('Signup Error:', error);
+        res.status(500).json({ 
+            message: 'Internal Server Error.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 

@@ -64,6 +64,9 @@ const login = async (req, res) => {
     }
 
     try {
+        // Test database connection first
+        await db.query('SELECT 1');
+        
         const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
 
         if (rows.length === 0) {
@@ -80,8 +83,24 @@ const login = async (req, res) => {
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ token });
     } catch (error) {
-        console.error('Login Error:', error.message);
-        res.status(500).json({ message: 'Internal Server Error.' });
+        console.error('Login Error Details:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+        
+        if (error.code === 'ECONNREFUSED') {
+            return res.status(500).json({ message: 'Database connection failed. Please try again later.' });
+        }
+        
+        if (!process.env.JWT_SECRET) {
+            return res.status(500).json({ message: 'Server configuration error.' });
+        }
+        
+        res.status(500).json({ 
+            message: 'Internal Server Error.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 

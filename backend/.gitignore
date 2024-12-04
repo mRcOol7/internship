@@ -4,12 +4,14 @@
 /node_modules
 package-lock.json
 # Environment variables and secrets
+
 .env
 .env.local
 .env.*.local
 .env.development
 .env.test
 .env.production
+.env.example
 
 # Logs
 logs/

@@ -2,109 +2,133 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { upload } = require('./multerConfig');
-const db = require('../db');
+const { query } = require('../db');
 
-// Signup Controller
 const signup = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Input validation
         if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required.' });
+            return res.status(400).json({ 
+                success: false,
+                message: 'Email and password are required.' 
+            });
         }
 
-        // Email format validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            return res.status(400).json({ message: 'Invalid email format.' });
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid email format.' 
+            });
         }
 
-        // Password strength validation
         if (password.length < 6) {
-            return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+            return res.status(400).json({ 
+                success: false,
+                message: 'Password must be at least 6 characters long.' 
+            });
         }
 
-        try {
-            // Check if user already exists
-            const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-            if (existingUsers.length > 0) {
-                return res.status(409).json({ message: 'Email already exists.' });
-            }
+        const existingUsers = await query(
+            'SELECT id FROM users WHERE email = ?', 
+            [email]
+        );
 
-            // Hash password
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            // Insert new user
-            await db.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword]);
-            
-            res.status(201).json({ message: 'User created successfully' });
-        } catch (dbError) {
-            console.error('Database Error:', dbError);
-            if (dbError.code === 'ER_DUP_ENTRY') {
-                return res.status(409).json({ message: 'Email already exists.' });
-            }
-            throw dbError; // Re-throw for the outer catch block
+        if (existingUsers.length > 0) {
+            return res.status(409).json({ 
+                success: false,
+                message: 'Email already exists.' 
+            });
         }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const result = await query(
+            'INSERT INTO users (email, password) VALUES (?, ?)',
+            [email, hashedPassword]
+        );
+
+        const token = jwt.sign(
+            { id: result.insertId },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'User created successfully',
+            token
+        });
+
     } catch (error) {
         console.error('Signup Error:', error);
         res.status(500).json({ 
+            success: false,
             message: 'Internal Server Error.',
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
 
-// Login Controller
 const login = async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required.' });
-    }
-
     try {
-        // Test database connection first
-        await db.query('SELECT 1');
-        
-        const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        const { email, password } = req.body;
 
-        if (rows.length === 0) {
-            return res.status(401).json({ message: 'Invalid email or password.' });
+        if (!email || !password) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Email and password are required.' 
+            });
         }
 
-        const user = rows[0];
+        const users = await query(
+            'SELECT id, email, password FROM users WHERE email = ?',
+            [email]
+        );
+
+        if (users.length === 0) {
+            return res.status(401).json({ 
+                success: false,
+                message: 'Invalid email or password.' 
+            });
+        }
+
+        const user = users[0];
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
-
         if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid email or password.' });
+            return res.status(401).json({ 
+                success: false,
+                message: 'Invalid email or password.' 
+            });
         }
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ token });
-    } catch (error) {
-        console.error('Login Error Details:', {
-            message: error.message,
-            code: error.code,
-            stack: error.stack
+        const token = jwt.sign(
+            { id: user.id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.status(200).json({
+            success: true,
+            token,
+            user: {
+                id: user.id,
+                email: user.email
+            }
         });
-        
-        if (error.code === 'ECONNREFUSED') {
-            return res.status(500).json({ message: 'Database connection failed. Please try again later.' });
-        }
-        
-        if (!process.env.JWT_SECRET) {
-            return res.status(500).json({ message: 'Server configuration error.' });
-        }
-        
+
+    } catch (error) {
+        console.error('Login Error:', error);
         res.status(500).json({ 
+            success: false,
             message: 'Internal Server Error.',
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
 
-// Image Upload Controller
 const uploadImage = (req, res) => {
     upload.single('image')(req, res, (err) => {
         if (err) {
@@ -121,71 +145,130 @@ const uploadImage = (req, res) => {
     });
 };
 
-// Save Content Controller
 const saveContent = async (req, res) => {
-    const { content } = req.body;
-    const token = req.headers.authorization?.replace('Bearer ', '');
-
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided.' });
-    }
-
-    if (!content) {
-        return res.status(400).json({ message: 'Content is required.' });
-    }
-
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded.id;
+        const { content } = req.body;
+        const token = req.headers.authorization?.replace('Bearer ', '');
 
-        await db.query('INSERT INTO editor_content (user_id, content) VALUES (?, ?)', [userId, content]);
-        res.status(201).json({ message: 'Content saved successfully.' });
+        if (!token) {
+            return res.status(401).json({ 
+                success: false,
+                message: 'No token provided.' 
+            });
+        }
+
+        if (!content) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Content is required.' 
+            });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        await query(
+            'INSERT INTO editor_content (user_id, content) VALUES (?, ?)',
+            [decoded.id, content]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Content saved successfully.'
+        });
+
     } catch (error) {
-        console.error('Save Content Error:', error.message);
+        console.error('Save Content Error:', error);
+        
         if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ message: 'Token expired.' });
+            return res.status(401).json({ 
+                success: false,
+                message: 'Token expired.' 
+            });
         }
 
         if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: 'Invalid token.' });
+            return res.status(401).json({ 
+                success: false,
+                message: 'Invalid token.' 
+            });
         }
 
-        res.status(500).json({ message: 'Internal Server Error.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Internal Server Error.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 
-// Protected Route
 const protectedRoute = (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
-        return res.status(401).json({ message: 'Unauthorized.' });
+        return res.status(401).json({ 
+            success: false,
+            message: 'Unauthorized.' 
+        });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        res.status(200).json({ message: 'Protected route.', userId: decoded.id });
+        res.status(200).json({ 
+            success: true,
+            message: 'Protected route.',
+            userId: decoded.id 
+        });
     } catch (error) {
         console.error('Protected Route Error:', error.message);
-        res.status(401).json({ message: 'Unauthorized.' });
+        res.status(401).json({ 
+            success: false,
+            message: 'Unauthorized.' 
+        });
     }
 };
 
-// Token Verification Middleware
-const verifyToken = (req, res, next) => {
-    const token = req.headers['authorization']?.replace('Bearer ', '');
-
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided.' });
-    }
-
+const verifyToken = async (req, res, next) => {
     try {
+        const token = req.headers['authorization']?.replace('Bearer ', '');
+
+        if (!token) {
+            return res.status(401).json({ 
+                success: false,
+                message: 'No token provided.' 
+            });
+        }
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        const users = await query(
+            'SELECT id FROM users WHERE id = ?',
+            [decoded.id]
+        );
+
+        if (users.length === 0) {
+            return res.status(401).json({ 
+                success: false,
+                message: 'User no longer exists.' 
+            });
+        }
+
         req.userId = decoded.id;
         next();
+
     } catch (error) {
-        console.error('Token Verification Error:', error.message);
-        res.status(401).json({ message: 'Invalid token.' });
+        console.error('Token Verification Error:', error);
+        
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ 
+                success: false,
+                message: 'Token expired.' 
+            });
+        }
+
+        res.status(401).json({ 
+            success: false,
+            message: 'Invalid token.' 
+        });
     }
 };
 
@@ -195,5 +278,5 @@ module.exports = {
     uploadImage,
     saveContent,
     protectedRoute,
-    verifyToken,
+    verifyToken
 };

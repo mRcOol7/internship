@@ -7,30 +7,51 @@ export const useAuth = () => {
     const login = async (email, password) => {
         try {
             const response = await api.post('/api/login', { email, password });
-            localStorage.setItem('token', response.data.token);
-            navigate('/', {state:{sucessMessage:'Login successful'}});
-            
+            const token = response.data.token;
+
+            if (!token) {
+                throw new Error('Invalid token received. Please try again.');
+            }
+
+            localStorage.setItem('token', token);
+            navigate('/', { state: { successMessage: 'Login successful' } });
         } catch (error) {
-            throw new Error(error.response?.data?.message || error.message || 'Login failed. Please try again.');
+            console.error('Login Error:', error.message);
+            throw new Error(error.response?.data?.message || 'Login failed. Please try again.');
         }
     };
 
     const signup = async (email, password) => {
         try {
             const response = await api.post('/api/signup', { email, password });
-            localStorage.setItem('token', response.data.token);
-            navigate('/login',{state:{Text:'Sign up successful',sucessMessage:'Sign up successful'}});
+            const token = response.data.token;
+
+            if (!token) {
+                throw new Error('Invalid token received. Please try again.');
+            }
+
+            localStorage.setItem('token', token);
+            navigate('/login', { state: { successMessage: 'Sign up successful' } });
         } catch (error) {
-            throw new Error(error.response?.data?.message || error.message || 'Sign up failed. Please try again.'); 
+            console.error('Signup Error:', error.message);
+            throw new Error(error.response?.data?.message || 'Sign up failed. Please try again.');
         }
     };
 
     const saveContent = async (text) => {
         try {
-            const response = await api.post('/api/save-Content', { text });
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('User is not authenticated. Please log in.');
+            }
+
+            const response = await api.post('/api/save-content', { text }, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             console.log('Text saved successfully', response.data);
         } catch (error) {
-            console.error('Error saving text', error);
+            console.error('Error saving text:', error.message);
+            throw new Error(error.response?.data?.message || 'Failed to save content. Please try again.');
         }
     };
 

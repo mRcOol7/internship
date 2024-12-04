@@ -9,15 +9,29 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// CORS Configuration to allow all origins
+// CORS Configuration
+const allowedOrigins = ['http://localhost:3000', 'https://internship-esg.vercel.app', 'https://backend-sigma-orpin.vercel.app'];
+
 const corsOptions = {
-    origin: '*', // Allow all origins
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false, // Credentials cannot be used with '*'
+    credentials: true
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));

@@ -1,5 +1,5 @@
 const express = require('express');
-const { signup, login, saveContent, saveImage: uploadImage } = require('../helpers/authHelper');
+const { signup, login, saveContent, uploadImage } = require('../helpers/authHelper');
 
 const router = express.Router();
 

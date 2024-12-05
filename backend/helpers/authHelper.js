@@ -129,6 +129,13 @@ const login = async (req, res) => {
     }
 };
 
+const logout = (req, res) => {
+    res.status(200).json({ 
+        success: true,
+        message: 'Logout successful.' 
+    });
+};
+
 const uploadImage = (req, res) => {
     upload.single('image')(req, res, (err) => {
         if (err) {
@@ -227,6 +234,118 @@ const protectedRoute = (req, res) => {
     }
 };
 
+const saveInvoice = async (req, res) => {
+    console.log(req.body);
+    console.log(req.userId);
+    try {
+        const { type, invoiceNumber, date, customerInfo, items, subtotal, tax, discount, total } = req.body;
+        console.log(type, invoiceNumber, date, customerInfo, items, subtotal, tax, discount, total);
+        
+        if (!type || !invoiceNumber || !date || !customerInfo || !items || subtotal === undefined || tax === undefined || discount === undefined || total === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required invoice details.'
+            });
+        }
+
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        console.log(date);
+        if (!dateRegex.test(date)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid date format. Please use YYYY-MM-DD format.'
+            });
+        }
+
+        const { businessName, gst, pan, email } = customerInfo;
+
+        let query_sql, query_params;
+        if (type === 'wholesaler') {
+            query_sql = `INSERT INTO ${type}s (
+                user_id, invoice_number, date, customer_info, items, 
+                subtotal, tax, discount, total, 
+                business_name, gst_number, pan_number, email
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            query_params = [
+                req.userId, invoiceNumber, date, JSON.stringify(customerInfo), JSON.stringify(items),
+                Number(subtotal) || 0, Number(tax) || 0, Number(discount) || 0, Number(total) || 0,
+                businessName || null, gst || null, pan || null, email || null
+            ];
+        } else {
+            query_sql = `INSERT INTO ${type}s (
+                user_id, invoice_number, date, customer_info, items,
+                subtotal, tax, discount, total
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            query_params = [
+                req.userId, invoiceNumber, date, JSON.stringify(customerInfo), JSON.stringify(items),
+                Number(subtotal) || 0, Number(tax) || 0, Number(discount) || 0, Number(total) || 0
+            ];
+        }
+        
+        const result = await query(query_sql, query_params);
+
+        res.status(201).json({
+            success: true,
+            message: 'Invoice saved successfully',
+            invoiceId: result.insertId
+        });
+
+    } catch (error) {
+        console.error('Save Invoice Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+const getInvoice = async (req, res) => {
+    try {
+        const { type, invoiceNumber } = req.params;
+        
+        if (!type || !invoiceNumber) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invoice type and number are required.'
+            });
+        }
+
+        const table = type === 'customer' ? 'customers' : 'wholesalers';
+        
+        const invoices = await query(
+            `SELECT * FROM ${table} WHERE user_id = ? AND invoice_number = ?`,
+            [req.userId, invoiceNumber]
+        );
+
+        if (invoices.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Invoice not found.'
+            });
+        }
+
+        const invoice = invoices[0];
+        invoice.customer_info = JSON.parse(invoice.customer_info);
+        invoice.items = JSON.parse(invoice.items);
+
+        res.status(200).json({
+            success: true,
+            invoice
+        });
+
+    } catch (error) {
+        console.error('Get Invoice Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+
+
 const verifyToken = async (req, res, next) => {
     try {
         const token = req.headers['authorization']?.replace('Bearer ', '');
@@ -275,8 +394,10 @@ const verifyToken = async (req, res, next) => {
 module.exports = {
     signup,
     login,
+    logout,
     uploadImage,
     saveContent,
-    protectedRoute,
+    saveInvoice,
+    getInvoice,
     verifyToken
 };

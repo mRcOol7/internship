@@ -34,42 +34,49 @@ const config = {
     password: process.env.TIDB_PASSWORD,
     database: process.env.TIDB_DATABASE,
     ssl,
-    connectionLimit: 10, 
+    connectionLimit: 10,
     waitForConnections: true,
     queueLimit: 0,
     timezone: '+05:30',
     supportBigNumbers: true,
     bigNumberStrings: true,
-    dateStrings: true
+    dateStrings: true,
+    connectTimeout: 60000,
+    acquireTimeout: 60000,
+    timeout: 60000,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10000
 };
 
 const pool = mysql.createPool(config);
 
-async function initializeDatabase() {
-    let connection;
+pool.on('connection', (connection) => {
+    console.log('New database connection established');
+});
+
+pool.on('error', (err) => {
+    console.error('Database pool error:', err);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {
+        console.log('Attempting to reconnect to database...');
+        initializeDatabase().catch(error => {
+            console.error('Failed to reconnect to database:', error);
+        });
+    }
+});
+
+const initializeDatabase = async () => {
     try {
         console.log('Verifying database connection...');
-        connection = await pool.getConnection();
-        console.log('Database connected successfully');
-
-        const [tables] = await connection.query('SHOW TABLES');
-        const tableNames = tables.map(t => Object.values(t)[0]);
-        
-        if (!tableNames.includes('users') || !tableNames.includes('editor_content')) {
-            throw new Error('Required tables are missing. Please check database setup.');
-        }
-
+        await checkDatabaseHealth();
         console.log('Database verification completed successfully');
-        return true;
+
+        console.log('Wholesalers table updated successfully');
+
     } catch (error) {
         console.error('Database initialization error:', error);
         throw error;
-    } finally {
-        if (connection) {
-            connection.release();
-        }
     }
-}
+};
 
 initializeDatabase().catch(error => {
     console.error('Failed to initialize database:', error);
@@ -78,16 +85,26 @@ initializeDatabase().catch(error => {
 
 async function query(sql, params = []) {
     let connection;
-    try {
-        connection = await pool.getConnection();
-        const [rows] = await connection.execute(sql, params);
-        return rows;
-    } catch (error) {
-        console.error('Database Query Error:', error);
-        throw error;
-    } finally {
-        if (connection) {
-            connection.release();
+    let retries = 3;
+    
+    while (retries > 0) {
+        try {
+            connection = await pool.getConnection();
+            const [rows] = await connection.execute(sql, params);
+            return rows;
+        } catch (error) {
+            console.error(`Database Query Error (${retries} retries left):`, error);
+            retries--;
+            
+            if (retries === 0) {
+                throw error;
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        } finally {
+            if (connection) {
+                connection.release();
+            }
         }
     }
 }
@@ -112,6 +129,33 @@ async function getAllUsers() {
         return users;
     } catch (error) {
         console.error('Error fetching users:', error);
+        throw error;
+    }
+}
+async function getAllCostomers(){
+    try {
+        const costomers=await query(
+            'SELECT user_id, invoice_number, date, customer_info, items,subtotal, tax, discount, total created_at FROM costomers ORDER BY created_at DESC'
+        );
+        console.log('\nCostomers in database:');
+        console.table(costomers);
+        return costomers;
+    } catch (error) {
+        console.error('Error fetching costumers:', error);
+        throw error;
+    }
+} 
+
+async function getAllWholesalers(){
+    try {
+        const wholesalers=await query(
+            'SELECT wholesaler.user_id, invoice_number, date, customer_info, items, subtotal, tax, discount, total, business_name, gst_number, pan_number, email created_at FROM wholesalers ORDER BY created_at DESC'
+        );
+        console.log('\nWholesalers in database:');
+        console.table(wholesalers);
+        return wholesalers;
+    } catch (error) {
+        console.error('Error fetching wholesalers:', error);
         throw error;
     }
 }
@@ -178,6 +222,7 @@ async function getContentByUserEmail(email) {
     }
 }
 
+
 async function getDatabaseStats() {
     try {
         const [userCount] = await query('SELECT COUNT(*) as count FROM users');
@@ -218,6 +263,9 @@ module.exports = {
     getAllUsers,
     getUserByEmail,
     getAllContent,
+    getAllCostomers,
+    getAllWholesalers,
     getContentByUserEmail,
-    getDatabaseStats
+    getDatabaseStats,
+    initializeDatabase
 };

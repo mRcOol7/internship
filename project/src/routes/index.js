@@ -5,6 +5,7 @@ import Login from "../components/login";
 import Signup from "../components/signup";
 import TextEditor from "../components/TextEditor";
 import ProtectedRoute from "../components/ProtectedRoute";
+import InvoiceGenerator from "../components/InvoiceGenerator";
 
 const AppRoutes = () => {
     return (
@@ -15,6 +16,7 @@ const AppRoutes = () => {
             <Route element={<ProtectedRoute />} >
               <Route path="/" element={<Home />} />
               <Route path="/editor" element={<TextEditor />} />
+              <Route path="/invoice-generator" element={<InvoiceGenerator />} />
             </Route>
         </Routes>
     </Router>

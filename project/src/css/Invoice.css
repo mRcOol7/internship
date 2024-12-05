@@ -1,0 +1,282 @@
+.invoice-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.invoice {
+  width: 100%;
+  padding: 10px;
+  background: white;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.invoice-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.company-info {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.company-logo {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.company-logo.default-logo {
+  background-color: #f8f9fa;
+  border: 1px solid #3498db;
+  border-radius: 4px;
+  font-size: 1.2em;
+  color: #3498db;
+}
+
+.uploaded-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.company-details {
+  flex: 1;
+}
+
+.company-details h2 {
+  color: #2c3e50;
+  font-size: 1.8em;
+  margin: 0 0 10px 0;
+}
+
+.company-details p {
+  margin: 3px 0;
+  color: #666;
+}
+
+.invoice-details {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.detail-group {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.detail-group p {
+  margin: 3px 0;
+  color: #2c3e50;
+}
+
+.billing-details {
+  margin: 20px 0;
+}
+
+.customer-info h3 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+.customer-details h4 {
+  color: #34495e;
+  margin: 0 0 8px 0;
+  font-size: 1em;
+}
+
+.customer-details p {
+  margin: 3px 0;
+  color: #666;
+}
+
+.invoice-items {
+  margin: 20px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+th {
+  background-color: #f8f9fa;
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #3498db;
+  color: #2c3e50;
+}
+
+td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  color: #2c3e50;
+}
+
+td:last-child,
+th:last-child {
+  text-align: right;
+}
+
+tr:hover {
+  background-color: #f8f9fa;
+}
+
+.invoice-summary {
+  margin-top: 20px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.summary-items {
+  width: 250px;
+  margin-left: auto;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+  padding: 3px 0;
+  color: #2c3e50;
+}
+
+.summary-item.discount {
+  color: #e74c3c;
+}
+
+.summary-item.total {
+  font-weight: bold;
+  font-size: 1.1em;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+  margin-top: 8px;
+  color: #2c3e50;
+}
+
+.invoice-footer {
+  margin-top: 30px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.terms-conditions {
+  margin-bottom: 15px;
+}
+
+.terms-conditions h4,
+.bank-details h4 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.terms-conditions ol {
+  margin: 0;
+  padding-left: 15px;
+  color: #666;
+}
+
+.terms-conditions li {
+  margin: 3px 0;
+}
+
+.bank-details {
+  margin-bottom: 20px;
+}
+
+.bank-details p {
+  margin: 3px 0;
+  color: #666;
+}
+
+.signature-section {
+  margin: 20px 0;
+  text-align: right;
+}
+
+.signature {
+  display: inline-block;
+  text-align: center;
+}
+
+.signature-line {
+  width: 150px;
+  border-bottom: 1px solid #666;
+  margin-bottom: 3px;
+}
+
+.footer-note {
+  text-align: center;
+  color: #666;
+  margin-top: 20px;
+}
+
+.footer-note .small {
+  font-size: 0.8em;
+  color: #999;
+  margin-top: 3px;
+}
+
+.print-button {
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+
+}
+
+.print-button:hover {
+  background-color: #2980b9;
+
+}
+
+.print-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice, .invoice * {
+    visibility: visible;
+  }
+  .invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+

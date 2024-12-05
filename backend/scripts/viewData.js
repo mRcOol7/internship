@@ -2,6 +2,8 @@ const {
     getAllUsers,
     getUserByEmail,
     getAllContent,
+    getAllCostomers,
+    getAllWholesalers,
     getContentByUserEmail,
     getDatabaseStats
 } = require('../db');
@@ -16,6 +18,12 @@ async function viewAllData() {
 
         console.log('\n=== All Content ===');
         await getAllContent();
+
+        console.log('\n=== All Costomers ===');
+        await getAllCostomers();
+
+        console.log('\n=== All Wholesalers ===');
+        await getAllWholesalers();
 
     } catch (error) {
         console.error('Error viewing data:', error);

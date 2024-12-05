@@ -7,104 +7,71 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.nav {
-  background-color: antiquewhite;
-  color: black;
-  padding: 10px 20px;
+.navbar {
+  background-color: #ffffff;
+  color: #333;
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: sticky;
-  height: 60px;
   top: 0;
-  z-index: 9999
+  z-index: 1000;
 }
 
-.nav-name {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #333;
-  text-decoration: none;
+.nav-brand {
   display: flex;
+  align-items: center;
+}
+
+.nav-brand h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2563eb;
+}
+
+.nav-brand a {
+  text-decoration: none;
 }
 
 .nav-list {
-  list-style: none;
   display: flex;
-  gap: 20px;
+  list-style: none;
   margin: 0;
   padding: 0;
-  justify-content: center;
-  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-item {
+  position: relative;
 }
 
 .nav-item a {
+  color: #4b5563;
   text-decoration: none;
-  color: black;
-  font-size: 1.2rem;
-  font-weight: bold;
-  display: block;
-  padding: 10px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease;
 }
 
 .nav-item a:hover {
-  background-color: lightgray;
-  color: #555;
-  transform: rotateX('-0.5px');
+  color: #2563eb;
 }
 
-.nav-item a.active {
-  background-color: lightgray;
-  color: #555;
+.nav-item.active a {
+  color: #2563eb;
 }
 
-.nav-name h1 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #333;
-  text-decoration: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: slideIn 0.5s ease-in-out;
-  border-color: #ffcdd2;
-  border-style: solid;
-  border-width: 2px;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-
-}
-
-@keyframes slideIn {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
-.nav-name h1:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-
-}
-
-.nav-name h1 a {
-  text-decoration: none;
-  color: #333;
-  transition: color 0.3s ease;
-}
-
-.nav-name h1 a:hover {
-  color: #4a90e2;
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #2563eb;
+  border-radius: 2px;
 }
 
 .login-container, .signup-container {
@@ -416,227 +383,44 @@ body {
 }
 
 @media screen and (max-width: 768px) {
-  .nav {
-    padding: 10px;
-  }
-  
-  .nav-name {
-    font-size: 1.5rem;
+  .navbar {
+    padding: 1rem;
   }
   
   .nav-list {
-    gap: 10px;
+    gap: 1rem;
   }
   
-  .nav-item a {
-    font-size: 1rem;
-  }
-
-  .nav-item a:hover {
-    color: #4a90e2;
-    font-size: 1.2rem;
-  }
-
-  .nav-item a:active {
-    color: #357abd;
-    font-size: 1.2rem;
-  }
-
-  .nav-item a:visited {
-    color: #4a90e2;
-    font-size: 1.2rem;
-  }
-
-  .nav-name h1 {
-    font-size: 1.5rem;
-  }
-
-  .nav-name h1:hover {
-    color: #4a90e2;
-    font-size: 1.7rem;
+  .nav-brand h1 {
+    font-size: 1.25rem;
   }
 }
 
 @media screen and (max-width: 480px) {
-  .nav {
-    padding: 5px;
-  }
-  
-  .nav-name {
-    font-size: 1.2rem;
+  .navbar {
+    padding: 0.5rem;
   }
   
   .nav-list {
-    gap: 5px;
+    gap: 0.5rem;
   }
   
-  .nav-item a {
-    font-size: 0.8rem;
-  }
-
-  .nav-item a:hover {
-    color: #4a90e2;
+  .nav-brand h1 {
     font-size: 1rem;
-  }
-
-  .nav-item a:active {
-    color: #357abd;
-    font-size: 1rem;
-  }
-
-  .nav-item a:visited {
-    color: #4a90e2;
-    font-size: 1rem;
-  }
-
-  .nav-name h1 {
-    font-size: 1.2rem;
-  }
-
-  .nav-name h1:hover {
-    color: #4a90e2;
-    font-size: 1.4rem;
   }
 }
 
 @media screen and (max-width: 320px) {
-  .nav {
-    padding: 2px;
-  }
-  
-  .nav-name {
-    font-size: 1rem;
+  .navbar {
+    padding: 0.2rem;
   }
   
   .nav-list {
-    gap: 2px;
+    gap: 0.2rem;
   }
   
-  .nav-item a {
-    font-size: 0.6rem;
-  }
-
-  .nav-item a:hover {
-    color: #4a90e2;
+  .nav-brand h1 {
     font-size: 0.8rem;
-  }
-
-  .nav-item a:active {
-    color: #357abd;
-    font-size: 0.8rem;
-  }
-
-  .nav-item a:visited {
-    color: #4a90e2;
-    font-size: 0.8rem;
-  }
-
-  .nav-name h1 {
-    font-size: 1rem;
-  }
-
-  .nav-name h1:hover {
-    color: #4a90e2;
-    font-size: 1.2rem;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .login-container, .signup-container {
-    max-width: 400px;
-  }
-  
-  .login-container h2, .signup-container h2 {
-    font-size: 1.5rem;
-  }
-  
-  .login-container input, .signup-container input {
-    font-size: 0.9rem;
-  }
-  
-  .login-container button, .signup-container button {
-    font-size: 1rem;
-  }
-
-  .login-container .message,
-  .signup-container .message {
-    font-size: 0.9rem;
-  }
-
-  .login-container .message.success,
-  .signup-container .message.success {
-    padding: 10px 15px;
-  }
-  
-  .login-container .message.error,
-  .signup-container .message.error {
-    padding: 10px 15px;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .login-container, .signup-container {
-    max-width: 300px;
-  }
-  
-  .login-container h2, .signup-container h2 {
-    font-size: 1.2rem;
-  }
-  
-  .login-container input, .signup-container input {
-    font-size: 0.8rem;
-  }
-  
-  .login-container button, .signup-container button {
-    font-size: 0.9rem;
-  } 
-
-  .login-container .message,
-  .signup-container .message {
-    font-size: 0.8rem;
-  }
-
-  .login-container .message.success,
-  .signup-container .message.success {
-    padding: 8px 12px;
-  }
-  
-  .login-container .message.error,
-  .signup-container .message.error {
-    padding: 8px 12px;
-  }
-}
-
-@media screen and (max-width: 320px) {
-  .login-container, .signup-container {
-    max-width: 200px;
-  }
-  
-  .login-container h2, .signup-container h2 {
-    font-size: 1rem;
-  }
-  
-  .login-container input, .signup-container input {
-    font-size: 0.7rem;
-  }
-  
-  .login-container button, .signup-container button {
-    font-size: 0.8rem;
-  }
-
-  .login-container .message,
-  .signup-container .message {
-    font-size: 0.7rem;
-  }
-
-  .login-container .message.success,
-  .signup-container .message.success {
-    padding: 6px 10px;
-  }
-  
-  .login-container .message.error,
-  .signup-container .message.error {
-    padding: 6px 10px;
   }
 }
 
@@ -698,4 +482,3 @@ body {
 .editor:visited:active {
   transform: scale(0.9);
 }
-

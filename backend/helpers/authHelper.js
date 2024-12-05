@@ -51,8 +51,7 @@ const signup = async (req, res) => {
 
         const token = jwt.sign(
             { id: result.insertId },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
+            process.env.JWT_SECRET
         );
 
         res.status(201).json({

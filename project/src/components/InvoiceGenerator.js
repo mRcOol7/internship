@@ -53,7 +53,6 @@ const InvoiceGenerator = () => {
     };
     let isValid = true;
 
-    // Validate customer info
     if (!invoiceData.customerInfo.name.trim()) {
       newErrors.customerInfo.name = 'Name is required';
       isValid = false;
@@ -80,7 +79,6 @@ const InvoiceGenerator = () => {
       }
     }
 
-    // Validate items
     if (invoiceData.items.length === 0) {
       newErrors.items = ['At least one item is required'];
       isValid = false;
@@ -113,7 +111,6 @@ const InvoiceGenerator = () => {
       }
     }));
     
-    // Validate on change
     setTimeout(() => validateForm(), 100);
   };
 
@@ -156,7 +153,6 @@ const InvoiceGenerator = () => {
       };
     });
     
-    // Validate on change
     setTimeout(() => validateForm(), 100);
   };
 
@@ -193,7 +189,7 @@ const InvoiceGenerator = () => {
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check file size (max 500KB)
+
       if (file.size > 500000) {
         alert('Please upload an image smaller than 500KB');
         e.target.value = '';

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Invoice from './Invoice';
-import axios from 'axios';
 import Navbar from './navBar';
 import { toast } from 'react-toastify';
 import '../css/InvoiceGenerator.css';
+import api from '../api';
 
 const InvoiceGenerator = () => {
   const token = localStorage.getItem('token');
@@ -171,7 +171,7 @@ const InvoiceGenerator = () => {
         return;
       }
 
-      const response = await axios.post('http://localhost:5000/api/save-invoice', invoiceData, {
+      const response = await api.post('/api/save-invoice', invoiceData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import axios from 'axios';
 import Navbar from './navBar';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import api from '../api';
 
 const TextEditor = () => {
     const [value, setValue] = useState('');
@@ -89,7 +89,7 @@ const TextEditor = () => {
         setIsSaving(true);
 
         try {
-            const response = await axios.post('http://localhost:5000/api/save-content', 
+            const response = await api.post('/api/save-content', 
                 { content: value },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -137,59 +137,57 @@ const TextEditor = () => {
             const file = input.files[0];
             if (!file) return;
     
-        try {
-            const formData = new FormData();
-            formData.append('image', file);
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
     
-            const response = await axios.post('http://localhost:5000/api/save-image', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`
+                const response = await api.post('/api/save-image', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+    
+                const imageUrl = response.data.imageUrl;
+                const quill = quillRef.current.getEditor();
+                // Get current selection or default to end of document
+                const range = quill.getSelection() || { index: quill.getLength(), length: 0 };
+                quill.insertEmbed(range.index, 'image', imageUrl);
+                
+                quill.setSelection(range.index + 1);
+    
+                toast.success('Image uploaded successfully!'
+                , {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+                console.log('Image uploaded successfully:', imageUrl);
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                const errorMessage = error.response?.data?.message || 'Failed to upload image';
+                toast.error(errorMessage, {
+                    position: "bottom-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+                
+                if (error.response?.status === 401) {
+                    setTimeout(() => {
+                        navigate('/login');
+                    }, 3000);
                 }
-            });
-    
-            const imageUrl = response.data.imageUrl;
-            const quill = quillRef.current.getEditor();
-            // Get current selection or default to end of document
-            const range = quill.getSelection() || { index: quill.getLength(), length: 0 };
-            quill.insertEmbed(range.index, 'image', imageUrl);
-            
-            quill.setSelection(range.index + 1);
-    
-            toast.success('Image uploaded successfully!'
-            , {
-                position: "bottom-center",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-            console.log('Image uploaded successfully:', imageUrl);
-        } catch (error) {
-            console.error('Error uploading image:', error);
-            const errorMessage = error.response?.data?.message || 'Failed to upload image';
-            toast.error(errorMessage, {
-                position: "bottom-center",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-            
-            if (error.response?.status === 401) {
-                setTimeout(() => {
-                    navigate('/login');
-                }, 3000);
             }
-        }
+        };
     };
-
-    };
-    
 
     return (
         <div>

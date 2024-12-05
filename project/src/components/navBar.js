@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { toast } from 'react-toastify';
+import api from '../api';
 
 const Navbar = () => {
   const location = useLocation();
@@ -14,7 +14,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:5000/api/logout', {}, {
+      await api.post('/api/logout', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log('Logout successful');

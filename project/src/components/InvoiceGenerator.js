@@ -29,6 +29,76 @@ const InvoiceGenerator = () => {
     total: 0
   });
 
+  const [errors, setErrors] = useState({
+    customerInfo: {
+      name: '',
+      phone: '',
+      email: '',
+      gst: '',
+      pan: ''
+    },
+    items: []
+  });
+
+  const validateForm = () => {
+    let newErrors = {
+      customerInfo: {
+        name: '',
+        phone: '',
+        email: '',
+        gst: '',
+        pan: ''
+      },
+      items: []
+    };
+    let isValid = true;
+
+    // Validate customer info
+    if (!invoiceData.customerInfo.name.trim()) {
+      newErrors.customerInfo.name = 'Name is required';
+      isValid = false;
+    }
+
+    if (invoiceData.customerInfo.phone && !/^\d{10}$/.test(invoiceData.customerInfo.phone)) {
+      newErrors.customerInfo.phone = 'Phone number must be 10 digits';
+      isValid = false;
+    }
+
+    if (invoiceData.customerInfo.email && !/\S+@\S+\.\S+/.test(invoiceData.customerInfo.email)) {
+      newErrors.customerInfo.email = 'Invalid email format';
+      isValid = false;
+    }
+
+    if (invoiceData.type === 'wholesaler') {
+      if (invoiceData.customerInfo.gst && !/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}\d[Z]{1}[A-Z\d]{1}$/.test(invoiceData.customerInfo.gst)) {
+        newErrors.customerInfo.gst = 'Invalid GST format';
+        isValid = false;
+      }
+      if (invoiceData.customerInfo.pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(invoiceData.customerInfo.pan)) {
+        newErrors.customerInfo.pan = 'Invalid PAN format';
+        isValid = false;
+      }
+    }
+
+    // Validate items
+    if (invoiceData.items.length === 0) {
+      newErrors.items = ['At least one item is required'];
+      isValid = false;
+    } else {
+      invoiceData.items.forEach((item, index) => {
+        const itemErrors = [];
+        if (!item.name) itemErrors.push('Item name is required');
+        if (!item.quantity || item.quantity <= 0) itemErrors.push('Valid quantity is required');
+        if (!item.price || item.price <= 0) itemErrors.push('Valid price is required');
+        newErrors.items[index] = itemErrors;
+        if (itemErrors.length > 0) isValid = false;
+      });
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   useEffect(() => {
     calculateTotals();
   }, [invoiceData.items, invoiceData.tax, invoiceData.discount]);
@@ -42,6 +112,9 @@ const InvoiceGenerator = () => {
         [name]: value
       }
     }));
+    
+    // Validate on change
+    setTimeout(() => validateForm(), 100);
   };
 
   const addItem = () => {
@@ -82,6 +155,9 @@ const InvoiceGenerator = () => {
         items: newItems
       };
     });
+    
+    // Validate on change
+    setTimeout(() => validateForm(), 100);
   };
 
   const calculateTotals = () => {
@@ -165,12 +241,8 @@ const InvoiceGenerator = () => {
   };
 
   const saveInvoice = async () => {
+    if (!validateForm()) return;
     try {
-      if (!invoiceData.customerInfo.name || !invoiceData.items.length) {
-        console.error('Missing required fields');
-        return;
-      }
-
       const response = await api.post('/api/save-invoice', invoiceData, {
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -255,6 +327,7 @@ const InvoiceGenerator = () => {
                     src={invoiceData.customerInfo.logo} 
                     alt="Company Logo" 
                     className="preview-image"
+                    required
                   />
                   <button 
                     type="button" 
@@ -275,10 +348,11 @@ const InvoiceGenerator = () => {
                   placeholder={invoiceData.type === 'wholesaler' ? 'Contact Person Name' : 'Customer Name'}
                   value={invoiceData.customerInfo.name}
                   onChange={handleCustomerInfoChange}
-                  className="form-control"
+                  className={`form-control ${errors.customerInfo.name ? 'error' : ''}`}
                   required
                 />
               </label>
+              {errors.customerInfo.name && <div className="error-message">{errors.customerInfo.name}</div>}
             </div>
             {invoiceData.type === 'wholesaler' && (
               <div className="form-group">
@@ -314,15 +388,29 @@ const InvoiceGenerator = () => {
               <label>
                 Phone Number:
                 <input
-                  type="text"
+                  type="tel"
                   name="phone"
                   placeholder="Phone Number"
                   value={invoiceData.customerInfo.phone}
                   onChange={handleCustomerInfoChange}
-                  className="form-control"
-                  required
+                  className={`form-control ${errors.customerInfo.phone ? 'error' : ''}`}
                 />
               </label>
+              {errors.customerInfo.phone && <div className="error-message">{errors.customerInfo.phone}</div>}
+            </div>
+            <div className="form-group">
+              <label>
+                Email:
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={invoiceData.customerInfo.email}
+                  onChange={handleCustomerInfoChange}
+                  className={`form-control ${errors.customerInfo.email ? 'error' : ''}`}
+                />
+              </label>
+              {errors.customerInfo.email && <div className="error-message">{errors.customerInfo.email}</div>}
             </div>
             {invoiceData.type === 'wholesaler' && (
               <>
@@ -335,10 +423,12 @@ const InvoiceGenerator = () => {
                       placeholder="GST Number"
                       value={invoiceData.customerInfo.gst}
                       onChange={handleCustomerInfoChange}
-                      className="form-control"
+                      className={`form-control ${errors.customerInfo.gst ? 'error' : ''}`}
                     />
                   </label>
+                  {errors.customerInfo.gst && <div className="error-message">{errors.customerInfo.gst}</div>}
                 </div>
+
                 <div className="form-group">
                   <label>
                     PAN Number:
@@ -348,22 +438,10 @@ const InvoiceGenerator = () => {
                       placeholder="PAN Number"
                       value={invoiceData.customerInfo.pan}
                       onChange={handleCustomerInfoChange}
-                      className="form-control"
+                      className={`form-control ${errors.customerInfo.pan ? 'error' : ''}`}
                     />
                   </label>
-                </div>
-                <div className="form-group">
-                  <label>
-                    Email:
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Business Email"
-                      value={invoiceData.customerInfo.email}
-                      onChange={handleCustomerInfoChange}
-                      className="form-control"
-                    />
-                  </label>
+                  {errors.customerInfo.pan && <div className="error-message">{errors.customerInfo.pan}</div>}
                 </div>
               </>
             )}
@@ -371,67 +449,53 @@ const InvoiceGenerator = () => {
 
           <div className="items-section">
             <h3>Items</h3>
-            <div className="item-header item-row">
-              <div>Item Name</div>
-              <div>Quantity</div>
-              <div>Price (₹)</div>
-              <div>Total</div>
-              <div></div>
+            {errors.items.length === 1 && typeof errors.items[0] === 'string' && (
+              <div className="error-message">{errors.items[0]}</div>
+            )}
+            
+            <div className="items-header">
+              <span>Item Name</span>
+              <span>Quantity</span>
+              <span>Price (₹)</span>
+              <span>Total</span>
+              <span></span>
             </div>
+
             {invoiceData.items.map((item, index) => (
               <div key={index} className="item-row">
-                <div className="form-group">
-                  <label>
-                    Item Name:
-                    <input
-                      type="text"
-                      placeholder="Item name"
-                      value={item.name}
-                      onChange={(e) => handleItemChange(index, 'name', e.target.value)}
-                      className="form-control"
-                      required
-                    />
-                  </label>
-                </div>
-                <div className="form-group">
-                  <label>
-                    Quantity:
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      value={item.quantity === 0 ? '' : item.quantity}
-                      onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                      className="form-control"
-                      required
-                    />
-                  </label>
-                </div>
-                <div className="form-group">
-                  <label>
-                    Price:
-                    <input
-                      type="number"
-                      placeholder="Price"
-                      value={item.price === 0 ? '' : item.price}
-                      onChange={(e) => handleItemChange(index, 'price', e.target.value)}
-                      min="0"
-                      step="0.01"
-                      className="form-control"
-                      required
-                    />
-                  </label>
-                </div>
-                <div className="item-total">
-                  {formatCurrency(item.quantity * item.price)}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeItem(index)}
+                <input
+                  type="text"
+                  placeholder="Item name"
+                  value={item.name}
+                  onChange={(e) => handleItemChange(index, 'name', e.target.value)}
+                  className={`form-control ${errors.items[index]?.includes('Item name is required') ? 'error' : ''}`}
+                />
+                <input
+                  type="number"
+                  placeholder="Quantity"
+                  value={item.quantity}
+                  onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                  className={`form-control ${errors.items[index]?.includes('Valid quantity is required') ? 'error' : ''}`}
+                />
+                <input
+                  type="number"
+                  placeholder="Price"
+                  value={item.price}
+                  onChange={(e) => handleItemChange(index, 'price', e.target.value)}
+                  className={`form-control ${errors.items[index]?.includes('Valid price is required') ? 'error' : ''}`}
+                />
+                <div className="item-total">{formatCurrency(item.total || 0)}</div>
+                <button 
+                  type="button" 
+                  onClick={() => removeItem(index)} 
                   className="remove-item-btn"
                   title="Remove Item"
                 >
                   ×
                 </button>
+                {Array.isArray(errors.items[index]) && errors.items[index].map((error, errorIndex) => (
+                  <div key={errorIndex} className="error-message">{error}</div>
+                ))}
               </div>
             ))}
             <button

@@ -139,6 +139,19 @@ body {
   background: #f8f9fa;
 }
 
+.signup-button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.signup-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.signup-button.loading {
+  opacity: 0.8;
+}
+
 .login-container input:focus, .signup-container input:focus {
   border-color: #4a90e2;
   background: white;
@@ -304,6 +317,10 @@ body {
     transform: translateY(-3px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
   }
+
+  .signup-button.loading {
+    opacity: 0.8;
+  }
 }
 
 @media screen and (max-width: 480px) {
@@ -342,6 +359,10 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
   }
+
+  .signup-button.loading {
+    opacity: 0.8;
+  }
 }
 
 @media screen and (max-width: 320px) {
@@ -379,6 +400,10 @@ body {
   .hero-section:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  }
+
+  .signup-button.loading {
+    opacity: 0.8;
   }
 }
 

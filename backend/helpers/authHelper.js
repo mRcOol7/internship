@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { upload } = require('./multerConfig');
 const { query } = require('../db');
+const sendEmail = require('../utils/sendEmail');
 
 const signup = async (req, res) => {
     try {
@@ -30,42 +31,47 @@ const signup = async (req, res) => {
             });
         }
 
-        const existingUsers = await query(
-            'SELECT id FROM users WHERE email = ?', 
-            [email]
-        );
-
-        if (existingUsers.length > 0) {
-            return res.status(409).json({ 
+        const existingUser = await query('SELECT * FROM users WHERE email = ?', [email]);
+        
+        if (existingUser && existingUser.length > 0) {
+            return res.status(400).json({
                 success: false,
-                message: 'Email already exists.' 
+                message: 'Email already registered'
             });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const result = await query(
-            'INSERT INTO users (email, password) VALUES (?, ?)',
-            [email, hashedPassword]
+        await query(
+            'INSERT INTO users (email, password, is_verified) VALUES (?, ?, ?)',
+            [email, hashedPassword, true]
         );
 
-        const token = jwt.sign(
-            { id: result.insertId },
-            process.env.JWT_SECRET
-        );
+        const subject = 'Welcome to ESG Platform!';
+        const htmlContent = `
+            <h2>Welcome to ESG Platform!</h2>
+            <p>Thank you for registering with us. Your account has been successfully created.</p>
+            <p>You can now log in and start using our platform.</p>
+            <br>
+            <p>Best regards,</p>
+            <p>The ESG Platform Team</p>
+        `;
+        
+        try {
+            await sendEmail(email, subject, null, htmlContent);
+        } catch (emailError) {
+            console.error('Failed to send welcome email:', emailError);
+        }
 
-        res.status(201).json({
+        res.status(200).json({
             success: true,
-            message: 'User created successfully',
-            token
+            message: 'Registration successful! You can now login.'
         });
 
     } catch (error) {
-        console.error('Signup Error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Internal Server Error.',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'An error occurred during registration.'
         });
     }
 };
@@ -81,20 +87,21 @@ const login = async (req, res) => {
             });
         }
 
-        const users = await query(
-            'SELECT id, email, password FROM users WHERE email = ?',
+        const result = await query(
+            'SELECT id, email, password, is_verified FROM users WHERE email = ?',
             [email]
         );
 
-        if (users.length === 0) {
+        console.log('Database query result:', JSON.stringify(result, null, 2));
+
+        if (!result || result.length === 0) {
             return res.status(401).json({ 
                 success: false,
                 message: 'Invalid email or password.' 
             });
         }
 
-        const user = users[0];
-
+        const user = result[0];
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ 
@@ -104,20 +111,15 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id },
+            { id: user.id, email: user.email },
             process.env.JWT_SECRET,
-            { expiresIn: '24h' }
         );
 
         res.status(200).json({
             success: true,
-            token,
-            user: {
-                id: user.id,
-                email: user.email
-            }
+            message: 'Login successful',
+            token
         });
-
     } catch (error) {
         console.error('Login Error:', error);
         res.status(500).json({ 
@@ -317,14 +319,14 @@ const getInvoice = async (req, res) => {
             [req.userId, invoiceNumber]
         );
 
-        if (invoices.length === 0) {
+        if (invoices[0]?.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Invoice not found.'
             });
         }
 
-        const invoice = invoices[0];
+        const invoice = invoices[0][0];
         invoice.customer_info = JSON.parse(invoice.customer_info);
         invoice.items = JSON.parse(invoice.items);
 
@@ -363,7 +365,7 @@ const verifyToken = async (req, res, next) => {
             [decoded.id]
         );
 
-        if (users.length === 0) {
+        if (users[0]?.length === 0) {
             return res.status(401).json({ 
                 success: false,
                 message: 'User no longer exists.' 
@@ -390,13 +392,71 @@ const verifyToken = async (req, res, next) => {
     }
 };
 
+const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.query;
+
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: 'Verification token is required'
+            });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        const result = await query(
+            'UPDATE users SET is_verified = true, verification_token = null WHERE email = ? AND verification_token = ? RETURNING *',
+            [decoded.email, token]
+        );
+
+        if (result[0]?.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired verification token'
+            });
+        }
+
+        const welcomeHtml = `
+            <h2>Welcome to ESG Platform!</h2>
+            <p>Your email has been successfully verified. You can now log in to your account.</p>
+        `;
+
+        await sendEmail(
+            decoded.email,
+            'Welcome to ESG Platform - Email Verified',
+            'Your email has been successfully verified.',
+            welcomeHtml
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Email verified successfully'
+        });
+
+    } catch (error) {
+        console.error('Email verification error:', error);
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired verification token'
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred during email verification'
+        });
+    }
+};
+
 module.exports = {
     signup,
     login,
     logout,
-    uploadImage,
     saveContent,
+    uploadImage,
     saveInvoice,
     getInvoice,
-    verifyToken
+    verifyToken,
+    verifyEmail
 };

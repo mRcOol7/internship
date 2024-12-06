@@ -1,33 +1,50 @@
 import React, { useState } from "react";
 import Navbar from "./navBar";
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../api";
 
 const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setconfirmPassword] = useState('');
-    const [message, setMessage] = useState({text:'',type:''});
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState({ text: '', type: '' });
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+        
         if (password !== confirmPassword) {
-            setMessage({text:'Passwords do not match',type:'error'});
+            setMessage({ text: 'Passwords do not match', type: 'error' });
+            setIsLoading(false);
             return;
         }
-        try{
-            const response = await api.post('/api/signup', {email, password});
-            localStorage.setItem('token', response.data.token);
-            setMessage({text:'Sign up successful',type:'success'});
+
+        try {
+            const response = await api.post('/api/signup', { email, password });
+            console.log(response); 
+            setMessage({ 
+                text: 'Sign up successful! You can now login.', 
+                type: 'success' 
+            });
+
             setTimeout(() => {
-                navigate('/login', {state:{Text:'Sign up successful',sucessMessage:'Sign up successful'}});
-                console.log('Sign up successful');
-            }, 1500);
-        }catch(error){
+                navigate('/login', { 
+                    state: { 
+                        text: 'Registration successful! Please login with your credentials',
+                        type: 'success'
+                    }
+                });
+            }, 2000);
+        } catch (error) {
             const errorMsg = error.response?.data?.message || error.message || 'Sign up failed. Please try again.';
-            setMessage({text:errorMsg,type:'error'});
-            console.log(errorMsg);
+            setMessage({ 
+                text: errorMsg, 
+                type: 'error' 
+            });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -35,56 +52,71 @@ const Signup = () => {
         <div>
             <Navbar />
             <div className="signup-container">
-                <h2>Sign Up</h2>
-                {message.text && (
-                    <div className={`message ${message.type}`}>
-                        {message.text}
-                    </div>
-                )}
-                <form onSubmit={handleSubmit}>
+                
+                <div className="signup-form-container">
+                    <form onSubmit={handleSubmit} className="signup-form">
+                        <h2>Sign Up</h2>
+                    
+                    {message.text && (
+                        <div className={`message ${message.type}`}>
+                            {message.text}
+                        </div>
+                    )}
+
                     <div className="form-group">
-                        <label>Email</label>
+                        <label htmlFor="email">Email:</label>
                         <input
                             type="email"
+                            id="email"
+            
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
                             placeholder="Enter your email"
-                            about="email"
-                            error="Please enter a valid email address"
-                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                            title="Please enter a valid email address"
-                            
                         />
                     </div>
+
                     <div className="form-group">
-                        <label>Password</label>
+                        <label htmlFor="password">Password:</label>
                         <input
                             type="password"
+                            id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            placeholder="Choose a password"
+                            placeholder="Enter your password"
+                            minLength="6"
                         />
                     </div>
+
                     <div className="form-group">
-                        <label>Confirm Password</label>
+                        <label htmlFor="confirmPassword">Confirm Password:</label>
                         <input
                             type="password"
+                            id="confirmPassword"
                             value={confirmPassword}
-                            onChange={(e) => setconfirmPassword(e.target.value)}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
                             required
                             placeholder="Confirm your password"
-                            error={password !== confirmPassword ? '<h1> Passwords do not match</h1>' : ''}
-                            pattern={password}           
-                            title="Passwords must match"
+                            minLength="6"
                         />
                     </div>
-                    <button type="submit">Sign Up</button>
-                    <p>Already have an account? <Link to="/login" className="Login-Link">Login</Link></p>
+
+                    <button 
+                        type="submit" 
+                        className={`signup-button ${isLoading ? 'loading' : ''}`}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Signing up...' : 'Sign Up'}
+                    </button>
+
+                    <p className="login-link">
+                        Already have an account? <Link to="/login">Login here</Link>
+                    </p>
                 </form>
             </div>
         </div>
+    </div>
     );
 };
 

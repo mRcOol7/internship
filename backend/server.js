@@ -19,12 +19,10 @@ const allowedOrigins = [
 
 const corsOptions = {
     origin: function (origin, callback) {
-        // For development/testing, allow all origins
         if (process.env.NODE_ENV !== 'production') {
             return callback(null, true);
         }
-        
-        // Allow requests with no origin (like mobile apps or curl requests)
+            
         if (!origin) return callback(null, true);
         
         if (allowedOrigins.indexOf(origin) !== -1) {
@@ -41,7 +39,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Handle preflight requests
 app.options('*', cors(corsOptions));
 
 app.use(express.json({ limit: '50mb' }));

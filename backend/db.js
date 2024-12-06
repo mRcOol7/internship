@@ -70,6 +70,19 @@ const initializeDatabase = async () => {
         await checkDatabaseHealth();
         console.log('Database verification completed successfully');
 
+        // Create users table if it doesn't exist
+        await query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                verification_token VARCHAR(255),
+                is_verified BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Users table initialized successfully');
+
         console.log('Wholesalers table updated successfully');
 
     } catch (error) {
@@ -135,7 +148,7 @@ async function getAllUsers() {
 async function getAllCostomers(){
     try {
         const costomers=await query(
-            'SELECT user_id, invoice_number, date, customer_info, items,subtotal, tax, discount, total created_at FROM costomers ORDER BY created_at DESC'
+            'SELECT user_id, invoice_number, date, customer_info, items,subtotal, tax, discount, total created_at FROM customers ORDER BY created_at DESC'
         );
         console.log('\nCostomers in database:');
         console.table(costomers);
@@ -149,7 +162,7 @@ async function getAllCostomers(){
 async function getAllWholesalers(){
     try {
         const wholesalers=await query(
-            'SELECT wholesaler.user_id, invoice_number, date, customer_info, items, subtotal, tax, discount, total, business_name, gst_number, pan_number, email created_at FROM wholesalers ORDER BY created_at DESC'
+            'SELECT invoice_number, date, customer_info, items, subtotal, tax, discount, total, business_name, gst_number, pan_number, email created_at FROM wholesalers ORDER BY created_at DESC'
         );
         console.log('\nWholesalers in database:');
         console.table(wholesalers);

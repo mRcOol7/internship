@@ -388,62 +388,62 @@ const verifyToken = async (req, res, next) => {
     }
 };
 
-const verifyEmail = async (req, res) => {
-    try {
-        const { token } = req.query;
+// const verifyEmail = async (req, res) => {
+//     try {
+//         const { token } = req.query;
 
-        if (!token) {
-            return res.status(400).json({
-                success: false,
-                message: 'Verification token is required'
-            });
-        }
+//         if (!token) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Verification token is required'
+//             });
+//         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        const result = await query(
-            'UPDATE users SET is_verified = true, verification_token = null WHERE email = ? AND verification_token = ? RETURNING *',
-            [decoded.email, token]
-        );
+//         const result = await query(
+//             'UPDATE users SET is_verified = true, verification_token = null WHERE email = ? AND verification_token = ? RETURNING *',
+//             [decoded.email, token]
+//         );
 
-        if (result[0]?.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid or expired verification token'
-            });
-        }
+//         if (result[0]?.length === 0) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Invalid or expired verification token'
+//             });
+//         }
 
-        const welcomeHtml = `
-            <h2>Signup Successful</h2>
-            <p>Your email has been successfully verified. You can now log in to your account.</p>
-        `;
+//         const welcomeHtml = `
+//             <h2>Signup Successful</h2>
+//             <p>Your email has been successfully verified. You can now log in to your account.</p>
+//         `;
 
-        await sendEmail(
-            decoded.email,
-            'Email Verified',
-            'Your email has been successfully verified.',
-            welcomeHtml
-        );
+//         await sendEmail(
+//             decoded.email,
+//             'Email Verified',
+//             'Your email has been successfully verified.',
+//             welcomeHtml
+//         );
 
-        res.status(200).json({
-            success: true,
-            message: 'Email verified successfully'
-        });
+//         res.status(200).json({
+//             success: true,
+//             message: 'Email verified successfully'
+//         });
 
-    } catch (error) {
-        console.error('Email verification error:', error);
-        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid or expired verification token'
-            });
-        }
-        res.status(500).json({
-            success: false,
-            message: 'An error occurred during email verification'
-        });
-    }
-};
+//     } catch (error) {
+//         console.error('Email verification error:', error);
+//         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Invalid or expired verification token'
+//             });
+//         }
+//         res.status(500).json({
+//             success: false,
+//             message: 'An error occurred during email verification'
+//         });
+//     }
+// };
 
 module.exports = {
     signup,
@@ -454,5 +454,5 @@ module.exports = {
     saveInvoice,
     getInvoice,
     verifyToken,
-    verifyEmail
+    // verifyEmail
 };

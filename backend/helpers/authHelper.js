@@ -47,14 +47,10 @@ const signup = async (req, res) => {
             [email, hashedPassword, true]
         );
 
-        const subject = 'Welcome to ESG Platform!';
+        const subject = 'Signup Successful';
         const htmlContent = `
-            <h2>Welcome to ESG Platform!</h2>
+            <h2>Signup Successful!</h2>
             <p>Thank you for registering with us. Your account has been successfully created.</p>
-            <p>You can now log in and start using our platform.</p>
-            <br>
-            <p>Best regards,</p>
-            <p>The ESG Platform Team</p>
         `;
         
         try {
@@ -418,13 +414,13 @@ const verifyEmail = async (req, res) => {
         }
 
         const welcomeHtml = `
-            <h2>Welcome to ESG Platform!</h2>
+            <h2>Signup Successful</h2>
             <p>Your email has been successfully verified. You can now log in to your account.</p>
         `;
 
         await sendEmail(
             decoded.email,
-            'Welcome to ESG Platform - Email Verified',
+            'Email Verified',
             'Your email has been successfully verified.',
             welcomeHtml
         );

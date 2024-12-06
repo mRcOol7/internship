@@ -19,7 +19,7 @@ module.exports = async (email, subject, text, html) => {
         console.log('Email transporter configured');
 
         const mailOptions = {
-            from: `"ESG Platform" <${process.env.SMTP_FROM}>`,
+            from: `"ESG Internship" <${process.env.SMTP_FROM}>`,
             to: email,
             subject: subject,
             text: text,

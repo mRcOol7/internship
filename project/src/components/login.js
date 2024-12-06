@@ -45,7 +45,6 @@ const Login = () => {
                             placeholder="Enter your email"
                             about="email"
                             error="Please enter a valid email address"
-                            pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                             title="Please enter a valid email address"
                         />
                     </div>
